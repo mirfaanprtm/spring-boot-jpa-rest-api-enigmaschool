@@ -1,5 +1,6 @@
 package com.example.challengespringboot.service;
 
+import com.example.challengespringboot.exception.NotFoundException;
 import com.example.challengespringboot.model.Student;
 import com.example.challengespringboot.repository.IStudentRepository;
 import com.example.challengespringboot.utils.SubjectKey;
@@ -17,34 +18,84 @@ public class StudentService implements IStudentService{
     @Override
     public List<Student> list() {
         try {
-            return studentRepository.getAll();
+            List<Student> students = studentRepository.getAll();
+            if(students.isEmpty()){
+                throw new NotFoundException("Student Is Empty");
+            }
+            return students;
         } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public Student create(Student student) {
         try {
-            return studentRepository.create(student);
+            Optional<List<Student>> students = studentRepository.findBy(TeacherStudentKey.first_name, student.getFirst_name());
+            if(studentRepository.getAll().size() <= 24){
+                if (students.isPresent()){
+                    throw new Exception("Data Already Exist");
+                }
+                return studentRepository.create(student);
+            } else {
+                throw new NotFoundException("Data is Full");
+            }
         } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public Optional<Student> get(String id) {
         try {
-            return studentRepository.findById(id);
+            Optional<Student> student = studentRepository.findById(id);
+            if(student.isEmpty()){
+            throw new NotFoundException("Student ID Not Found");
+            }
+            return student;
         }catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public Optional<List<Student>> getBy(TeacherStudentKey key, String value) {
         try {
-            return studentRepository.findBy(key, value);
+            Optional<List<Student>> students = studentRepository.findBy(key, value);
+            if(students.isEmpty()){
+                throw new NotFoundException("Student Not Found");
+            }
+            return students;
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Student update(Student student, String id) {
+        try {
+            get(id);
+            studentRepository.update(student, id);
+        } catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+        return student;
+    }
+
+    @Override
+    public void delete(String id) {
+        try {
+            get(id);
+            studentRepository.delete(id);
+        } catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<Student> addBulk(List<Student> bulkStudents) {
+        try {
+            return studentRepository.addBulk(bulkStudents);
         } catch (Exception e){
             throw new RuntimeException(e.getMessage());
         }

@@ -12,4 +12,7 @@ public interface IStudentRepository {
     Student create(Student student) throws Exception;
     Optional<Student> findById(String id) throws Exception;
     Optional<List<Student>> findBy(TeacherStudentKey key, String value) throws Exception;
+    void update(Student student, String id) throws Exception;
+    void delete(String id) throws Exception;
+    List<Student> addBulk(List<Student> bulkStudents) throws Exception;
 }

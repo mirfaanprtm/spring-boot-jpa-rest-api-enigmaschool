@@ -1,6 +1,8 @@
 package com.example.challengespringboot.repository;
 
+import com.example.challengespringboot.exception.NotFoundException;
 import com.example.challengespringboot.model.Student;
+import com.example.challengespringboot.model.Subject;
 import com.example.challengespringboot.model.Teacher;
 import com.example.challengespringboot.utils.IRandomStringGenerator;
 import com.example.challengespringboot.utils.TeacherStudentKey;
@@ -42,25 +44,68 @@ public class TeacherArrayRepository implements ITeacherRepository{
     @Override
     public Optional<List<Teacher>> findBy(TeacherStudentKey key, String value) throws Exception {
         List<Teacher> teacherList = new ArrayList<>();
-        for(Teacher teacher : teachers){
             switch (key){
                 case first_name -> {
-                    if(teacher.getFirst_name().toLowerCase().contains(value)){
-                        teacherList.add(teacher);
+                    for(Teacher teacher : teachers) {
+                        if (teacher.getFirst_name().toLowerCase().equals(value.toLowerCase())) {
+                            teacherList.add(teacher);
+                        }
                     }
                 }
                 case last_name -> {
-                    if(teacher.getLast_name().toLowerCase().contains(value)){
-                        teacherList.add(teacher);
+                    for(Teacher teacher : teachers) {
+                        if (teacher.getLast_name().toLowerCase().equals(value.toLowerCase())) {
+                            teacherList.add(teacher);
+                        }
                     }
                 }
                 case email -> {
-                    if(teacher.getEmail().toLowerCase().contains(value)){
-                        teacherList.add(teacher);
+                    for(Teacher teacher : teachers) {
+                        if (teacher.getEmail().toLowerCase().equals(value.toLowerCase())) {
+                            teacherList.add(teacher);
+                        }
                     }
                 }
             }
-        }
         return teacherList.isEmpty() ? Optional.empty() : Optional.of(teacherList);
+    }
+
+    @Override
+    public void update(Teacher teacher, String id) throws Exception {
+        for(Teacher existingTeacher : teachers){
+            if(existingTeacher.getTeacherId().equals(id)){
+                existingTeacher.setFirst_name(teacher.getFirst_name());
+                existingTeacher.setLast_name(teacher.getLast_name());
+                existingTeacher.setEmail(teacher.getEmail());
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void delete(String id) throws Exception {
+        for(Teacher teacher : teachers){
+            if(teacher.getTeacherId().equals(id)){
+                teachers.remove(teacher);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public List<Teacher> addBulk(List<Teacher> bulkTeachers) throws Exception {
+        for(Teacher teacher : bulkTeachers){
+            Optional<List<Teacher>> exitstingTeacher = findBy(TeacherStudentKey.first_name, teacher.getFirst_name());
+            if(getAll().size() <= 5){
+                if (exitstingTeacher.isPresent()){
+                    throw new Exception("Data Already Exist");
+                }
+                teacher.setTeacherId(randomStringGenerator.random());
+                teachers.add(teacher);
+            } else {
+                throw new NotFoundException("Data is Full");
+            }
+        }
+        return bulkTeachers;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.challengespringboot.controller;
 
 import com.example.challengespringboot.model.Student;
+import com.example.challengespringboot.model.response.SuccessResponse;
 import com.example.challengespringboot.service.IStudentService;
 import com.example.challengespringboot.utils.TeacherStudentKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,35 +20,40 @@ public class StudentController {
 
     @GetMapping
     public ResponseEntity getAllCourseStudent(){
-
         List<Student> studentList = studentService.list();
-        if(studentList.isEmpty()){
-            return ResponseEntity.status(HttpStatus.OK).body("Data Kosong");
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(studentList);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<List<Student>>("SUCCESS FINDING", studentList));
     }
     @PostMapping
     public ResponseEntity createStudent(@RequestBody Student student){
         Student student1 = studentService.create(student);
-        return ResponseEntity.status(HttpStatus.CREATED).body(student1);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new SuccessResponse<Student>("CREATE SUCCESS", student1));
     }
     @GetMapping("/{id}")
     public ResponseEntity getById(@PathVariable("id") String id){
         Optional<Student> student = studentService.get(id);
-        if(student.isEmpty()){
-            return ResponseEntity.status(HttpStatus.OK).body("Data tidak ditemukan");
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(student);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Optional<Student>>("ID FOUND", student));
     }
     @GetMapping(params = {"key", "value"})
     public ResponseEntity getBy(@RequestParam String key, @RequestParam String value){
         Optional<List<Student>> students = studentService.getBy(TeacherStudentKey.valueOf(key), value);
-        if(students.isEmpty()){
-            return ResponseEntity.status(HttpStatus.OK).body("Data tidak ditemukan");
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Optional<List<Student>>>("STUDENT FOUND", students));
+    }
 
-        return ResponseEntity.status(HttpStatus.OK).body(students);
+    @DeleteMapping
+    public ResponseEntity deleteById(@RequestBody String id){
+        studentService.delete(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<>("Delete Success", "null"));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity updateCourse(@RequestBody Student student, @PathVariable String id){
+        studentService.update(student, id);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Student>("Update Success", student));
+    }
+
+    @PostMapping("/addBulk")
+    public ResponseEntity addBulk(@RequestBody List<Student> students){
+        List<Student> studentList = studentService.addBulk(students);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new SuccessResponse<List<Student>>("CREATE SUCCESS", studentList));
     }
 }

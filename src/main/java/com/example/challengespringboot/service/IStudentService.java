@@ -13,4 +13,7 @@ public interface IStudentService {
     Student create(Student student);
     Optional<Student> get(String id);
     Optional<List<Student>> getBy(TeacherStudentKey key, String value);
+    Student update(Student student, String id);
+    void delete(String id);
+    List<Student> addBulk(List<Student> bulkStudents);
 }
