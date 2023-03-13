@@ -74,6 +74,10 @@ public class SubjectService implements ISubjectService{
     public Subject update(Subject subject, String id) {
         try {
             get(id);
+            Optional<List<Subject>> subjects = subjectRepository.findBy(SubjectKey.subject_name, subject.getSubject_name());
+            if(subjects.isPresent()){
+                throw new Exception("Data Already Exist");
+            }
             subjectRepository.update(subject, id);
         } catch (Exception e){
             throw new RuntimeException(e.getMessage());
