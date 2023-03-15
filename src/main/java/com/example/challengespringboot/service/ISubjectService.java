@@ -10,7 +10,7 @@ public interface ISubjectService {
     List<Subject> list();
 
     Subject create(Subject subject);
-    Optional<Subject> get(String id);
+    List<Subject> get(String id);
     Optional<List<Subject>> getBy(SubjectKey key, String value);
     Subject update(Subject subject, String id);
     void delete(String id);

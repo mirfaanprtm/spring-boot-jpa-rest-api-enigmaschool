@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface ISubjectRepository {
     List<Subject> getAll() throws Exception;
     Subject create(Subject subject) throws Exception;
-    Optional<Subject> findById(String id) throws Exception;
+    List<Subject> findById(String id) throws Exception;
     Optional<List<Subject>> findBy(SubjectKey key, String value) throws Exception;
     void update(Subject subject, String id) throws Exception;
     void delete(String id) throws Exception;

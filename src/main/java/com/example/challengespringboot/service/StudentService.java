@@ -2,10 +2,12 @@ package com.example.challengespringboot.service;
 
 import com.example.challengespringboot.exception.NotFoundException;
 import com.example.challengespringboot.model.Student;
+import com.example.challengespringboot.model.Subject;
 import com.example.challengespringboot.repository.IStudentRepository;
 import com.example.challengespringboot.utils.SubjectKey;
 import com.example.challengespringboot.utils.TeacherStudentKey;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +15,12 @@ import java.util.Optional;
 @Service
 public class StudentService implements IStudentService{
     @Autowired
+    @Qualifier("students")
     private IStudentRepository studentRepository;
+
+    public StudentService(IStudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
 
     @Override
     public List<Student> list() {
@@ -46,9 +53,9 @@ public class StudentService implements IStudentService{
     }
 
     @Override
-    public Optional<Student> get(String id) {
+    public List<Student> get(String id) {
         try {
-            Optional<Student> student = studentRepository.findById(id);
+            List<Student> student = studentRepository.findById(id);
             if(student.isEmpty()){
             throw new NotFoundException("Student ID Not Found");
             }
@@ -75,6 +82,10 @@ public class StudentService implements IStudentService{
     public Student update(Student student, String id) {
         try {
             get(id);
+            Optional<List<Student>> students = studentRepository.findBy(TeacherStudentKey.first_name, student.getFirst_name());
+            if(students.isPresent()){
+                throw new Exception("Data Already Exist");
+            }
             studentRepository.update(student, id);
         } catch (Exception e){
             throw new RuntimeException(e.getMessage());
@@ -95,9 +106,20 @@ public class StudentService implements IStudentService{
     @Override
     public List<Student> addBulk(List<Student> bulkStudents) {
         try {
-            return studentRepository.addBulk(bulkStudents);
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            for(Student student : bulkStudents){
+                Optional<List<Student>> students = studentRepository.findBy(TeacherStudentKey.first_name, student.getFirst_name());
+                if(studentRepository.getAll().size() <= 8){
+                    if (students.isPresent()){
+                        throw new Exception("Data Already Exist");
+                    }
+                    studentRepository.create(student);
+                } else {
+                    throw new NotFoundException("Data is Full");
+                }
+            }
+            return bulkStudents;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

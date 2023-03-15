@@ -1,8 +1,6 @@
 package com.example.challengespringboot.repository;
 
 import com.example.challengespringboot.exception.NotFoundException;
-import com.example.challengespringboot.model.Student;
-import com.example.challengespringboot.model.Subject;
 import com.example.challengespringboot.model.Teacher;
 import com.example.challengespringboot.utils.IRandomStringGenerator;
 import com.example.challengespringboot.utils.TeacherStudentKey;
@@ -32,13 +30,13 @@ public class TeacherArrayRepository implements ITeacherRepository{
     }
 
     @Override
-    public Optional<Teacher> findById(String id) throws Exception {
+    public List<Teacher> findById(String id) throws Exception {
         for(Teacher teacher : teachers){
             if(teacher.getTeacherId().equals(id)){
-                return Optional.of(teacher);
+                return List.of(teacher);
             }
         }
-        return Optional.empty();
+        return List.of();
     }
 
     @Override

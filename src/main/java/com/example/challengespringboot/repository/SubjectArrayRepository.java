@@ -1,11 +1,9 @@
 package com.example.challengespringboot.repository;
 
 import com.example.challengespringboot.exception.NotFoundException;
-import com.example.challengespringboot.model.Student;
 import com.example.challengespringboot.model.Subject;
 import com.example.challengespringboot.utils.IRandomStringGenerator;
 import com.example.challengespringboot.utils.SubjectKey;
-import com.example.challengespringboot.utils.TeacherStudentKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -32,13 +30,13 @@ public class SubjectArrayRepository implements ISubjectRepository{
     }
 
     @Override
-    public Optional<Subject> findById(String id) throws Exception {
+    public List<Subject> findById(String id) throws Exception {
         for(Subject subject : subjects){
             if(subject.getSubjectId().equals(id)){
-                return Optional.of(subject);
+                return List.of(subject);
             }
         }
-        return Optional.empty();
+        return List.of();
     }
 
     @Override

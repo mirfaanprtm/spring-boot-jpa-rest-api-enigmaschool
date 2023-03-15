@@ -2,10 +2,11 @@ package com.example.challengespringboot.service;
 
 import com.example.challengespringboot.exception.NotFoundException;
 import com.example.challengespringboot.model.Subject;
-import com.example.challengespringboot.repository.IStudentRepository;
 import com.example.challengespringboot.repository.ISubjectRepository;
+import com.example.challengespringboot.utils.IRandomStringGenerator;
 import com.example.challengespringboot.utils.SubjectKey;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,9 @@ import java.util.Optional;
 @Service
 public class SubjectService implements ISubjectService{
     @Autowired
+    IRandomStringGenerator randomStringGenerator;
+    @Autowired
+    @Qualifier("subjects")
     private ISubjectRepository subjectRepository;
     @Override
     public List<Subject> list() {
@@ -45,9 +49,9 @@ public class SubjectService implements ISubjectService{
     }
 
     @Override
-    public Optional<Subject> get(String id) {
+    public List<Subject> get(String id) {
         try {
-            Optional<Subject> subject = subjectRepository.findById(id);
+            List<Subject> subject = subjectRepository.findById(id);
             if(subject.isEmpty()){
                 throw new NotFoundException("Subject ID Not Found");
             }
@@ -98,9 +102,20 @@ public class SubjectService implements ISubjectService{
     @Override
     public List<Subject> addBulk(List<Subject> bulkSubjects) {
         try {
-            return subjectRepository.addBulk(bulkSubjects);
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            for(Subject subject : bulkSubjects){
+                Optional<List<Subject>> subjects = subjectRepository.findBy(SubjectKey.subject_name, subject.getSubject_name());
+                if(subjectRepository.getAll().size() <= 8){
+                    if (subjects.isPresent()){
+                        throw new Exception("Data Already Exist");
+                    }
+                    subjectRepository.create(subject);
+                } else {
+                    throw new NotFoundException("Data is Full");
+                }
+            }
+            return bulkSubjects;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

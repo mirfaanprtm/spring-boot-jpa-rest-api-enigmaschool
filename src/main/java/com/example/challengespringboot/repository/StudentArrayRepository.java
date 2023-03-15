@@ -30,13 +30,13 @@ public class StudentArrayRepository implements IStudentRepository{
     }
 
     @Override
-    public Optional<Student> findById(String id) throws Exception {
+    public List<Student> findById(String id) throws Exception {
         for(Student student : students){
             if(student.getStudentId().equals(id)){
-                return Optional.of(student);
+                return List.of(student);
             }
         }
-        return Optional.empty();
+        return List.of();
     }
 
     @Override

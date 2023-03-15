@@ -2,11 +2,10 @@ package com.example.challengespringboot.service;
 
 import com.example.challengespringboot.exception.NotFoundException;
 import com.example.challengespringboot.model.Teacher;
-import com.example.challengespringboot.repository.IStudentRepository;
 import com.example.challengespringboot.repository.ITeacherRepository;
-import com.example.challengespringboot.utils.SubjectKey;
 import com.example.challengespringboot.utils.TeacherStudentKey;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +13,7 @@ import java.util.Optional;
 @Service
 public class TeacherService implements ITeacherService{
     @Autowired
+    @Qualifier("teachers")
     private ITeacherRepository teacherRepository;
 
     @Override
@@ -47,9 +47,9 @@ public class TeacherService implements ITeacherService{
     }
 
     @Override
-    public Optional<Teacher> get(String id) {
+    public List<Teacher> get(String id) {
         try {
-            Optional<Teacher> teacher = teacherRepository.findById(id);
+            List<Teacher> teacher = teacherRepository.findById(id);
             if(teacher.isEmpty()){
                 throw new NotFoundException("Teacher ID not found");
             }
