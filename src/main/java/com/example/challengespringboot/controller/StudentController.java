@@ -1,77 +1,71 @@
 package com.example.challengespringboot.controller;
 
 import com.example.challengespringboot.model.Student;
-import com.example.challengespringboot.model.Teacher;
+import com.example.challengespringboot.model.request.SearchData;
 import com.example.challengespringboot.model.request.StudentRequest;
 import com.example.challengespringboot.model.response.SuccessResponse;
-import com.example.challengespringboot.repository.StudentRepository;
-import com.example.challengespringboot.service.IStudentService;
-import com.example.challengespringboot.utils.TeacherStudentKey;
-import jakarta.validation.Valid;
+import com.example.challengespringboot.service.StudentService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/students")
-@Validated
 public class StudentController {
     @Autowired
-    IStudentService studentService;
-
+    private ModelMapper modelMapper;
     @Autowired
-    ModelMapper modelMapper;
-
-    @GetMapping
-    public ResponseEntity getAllCourseStudent(){
-        List<Student> studentList = studentService.list();
-        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<List<Student>>("SUCCESS FINDING", studentList));
-    }
+    private StudentService studentService;
     @PostMapping
-    public ResponseEntity createStudent(@Valid @RequestBody StudentRequest studentRequest){
+    public ResponseEntity createStudentController(@Valid @RequestBody StudentRequest studentRequest){
         Student newStudent = modelMapper.map(studentRequest, Student.class);
 
-        Student student1 = studentService.create(newStudent);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new SuccessResponse<Student>("CREATE SUCCESS", student1));
+        Student student = studentService.createStudentService(newStudent);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Student>("CREATE STUDENT SUCCESS", student));
     }
     @GetMapping("/{id}")
-    public ResponseEntity getById(@PathVariable("id") String id){
-        List<Student> student = studentService.get(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<List<Student>>("ID FOUND", student));
+    public ResponseEntity findByIdStudentController(@PathVariable("id") Long id){
+        Optional<Student> studentList = studentService.findByIdService(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Optional<Student>>("SUCCESS FINDING ID", studentList));
     }
-    @GetMapping(params = {"key", "value"})
-    public ResponseEntity getBy(@RequestParam String key, @RequestParam String value){
-        Optional<List<Student>> students = studentService.getBy(TeacherStudentKey.valueOf(key), value);
-        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Optional<List<Student>>>("STUDENT FOUND", students));
+    @GetMapping
+    public ResponseEntity findAllStudentController(){
+        Iterable<Student> students = studentService.findAllStudentService();
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Iterable<Student>>("SUCCESS GET ALL DATA STUDENTS", students));
     }
-
-    @DeleteMapping
-    public ResponseEntity deleteById(@RequestBody String id){
-        studentService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<>("DELETE SUCCESS", "null"));
-    }
-
     @PutMapping("/{id}")
-    public ResponseEntity updateCourse(@Valid @RequestBody StudentRequest studentRequest, @PathVariable String id){
+    public ResponseEntity updateStudentController(@PathVariable Long id, @Valid @RequestBody StudentRequest studentRequest){
         Student newStudent = modelMapper.map(studentRequest, Student.class);
-        studentService.update(newStudent, id);
-        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Student>("UPDATE SUCCESS", newStudent));
+
+        Student student = studentService.updateStudentService(newStudent, id);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<Student>("UPDATE STUDENT SUCCESS", student));
     }
 
-    @PostMapping("/addBulk")
-    public ResponseEntity addBulk(@RequestBody @Valid List<StudentRequest> studentsRequest){
-        List<Student> newStudent = studentsRequest.stream().map(t -> modelMapper.map(t, Student.class)).collect(Collectors.toList());
-
-        List<Student> studentList = studentService.addBulk(newStudent);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new SuccessResponse<List<Student>>("CREATE BULK SUCCESS", studentList));
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteStudentById(@PathVariable("id") Long id){
+        studentService.deleteByIdService(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse<>("DELETE STUDENT SUCCESS", "DATA NULL"));
     }
+
+    @PostMapping("/{first_name}")
+    public List<Student> findNameStudentController(@RequestBody SearchData searchData){
+        return studentService.findNameStudentService(searchData.getSearchKey());
+    }
+//    @PostMapping("/search/{page}/{size}/{sort}")
+//    public Iterable<Student> findByNameContainsController(@RequestBody SearchData searchData, @PathVariable int size, @PathVariable int page, @PathVariable("sort") String sort){
+//        Pageable pageable = PageRequest.of(page-1, size, Sort.by("id").ascending());
+//        if(sort.equals("desc")){
+//            pageable = PageRequest.of(page-1, size, Sort.by("id").descending());
+//        }
+//        return studentService.findByNameContainsService(searchData.getSearchKey(), pageable);
+//    }
 }

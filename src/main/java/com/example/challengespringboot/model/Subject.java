@@ -1,30 +1,60 @@
 package com.example.challengespringboot.model;
 
-public class Subject {
-    private String subjectId;
-    private String subject_name;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
-    public String getSubjectId() {
-        return subjectId;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Set;
+
+@Entity
+@Table(name = "subjects")
+public class Subject implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(length = 100, nullable = false)
+    private String name;
+
+    @ManyToOne
+    private Teacher teacher;
+
+    @ManyToMany()
+    @JoinTable(
+            name = "subject_student",
+            joinColumns = @JoinColumn(name = "subject_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
+    private Set<Student> student;
+
+    public Set<Student> getStudent() {
+        return student;
     }
 
-    public void setSubjectId(String subjectId) {
-        this.subjectId = subjectId;
+    public void setStudent(Set<Student> student) {
+        this.student = student;
     }
 
-    public String getSubject_name() {
-        return subject_name;
+    public Teacher getTeacher() {
+        return teacher;
     }
 
-    public void setSubject_name(String subject_name) {
-        this.subject_name = subject_name;
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
     }
 
-    @Override
-    public String toString() {
-        return "Subject{" +
-                "subjectId='" + subjectId + '\'' +
-                ", subject_name='" + subject_name + '\'' +
-                '}';
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

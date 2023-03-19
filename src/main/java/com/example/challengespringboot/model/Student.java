@@ -1,17 +1,41 @@
 package com.example.challengespringboot.model;
 
-public class Student {
-    private String studentId;
-    private String first_name;
-    private String last_name;
-    private String email;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
-    public String getStudentId() {
-        return studentId;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Set;
+
+@Entity
+@Table(name = "students")
+public class Student implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(length = 100, nullable = false)
+    private String first_name;
+    @Column(length = 100, nullable = false)
+    private String last_name;
+    @Column(length = 50, nullable = false, unique = true)
+    private String email;
+    @ManyToMany(mappedBy = "student")
+    @JsonBackReference
+    private Set<Subject> subject;
+
+    public Set<Subject> getSubject() {
+        return subject;
     }
 
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
+    public void setSubject(Set<Subject> subject) {
+        this.subject = subject;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirst_name() {
@@ -41,7 +65,7 @@ public class Student {
     @Override
     public String toString() {
         return "Student{" +
-                "studentId='" + studentId + '\'' +
+                "id=" + id +
                 ", first_name='" + first_name + '\'' +
                 ", last_name='" + last_name + '\'' +
                 ", email='" + email + '\'' +

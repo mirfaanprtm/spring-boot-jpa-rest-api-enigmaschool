@@ -1,29 +1,39 @@
 package com.example.challengespringboot.service;
 
 import com.example.challengespringboot.exception.NotFoundException;
+import com.example.challengespringboot.model.Student;
 import com.example.challengespringboot.model.Subject;
-import com.example.challengespringboot.repository.ISubjectRepository;
-import com.example.challengespringboot.utils.IRandomStringGenerator;
-import com.example.challengespringboot.utils.SubjectKey;
+import com.example.challengespringboot.repository.IStudentRepo;
+import com.example.challengespringboot.repository.ISubjectRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
 @Service
-public class SubjectService implements ISubjectService{
+@Transactional
+public class SubjectService {
     @Autowired
-    IRandomStringGenerator randomStringGenerator;
+    private ISubjectRepo subjectRepo;
+
     @Autowired
-    @Qualifier("subjects")
-    private ISubjectRepository subjectRepository;
-    @Override
-    public List<Subject> list() {
+    StudentService studentService;
+    public Subject createSubjectService(Subject subject){
         try {
-            List<Subject> subjects = subjectRepository.getAll();
+            return subjectRepo.save(subject);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Subject> findAllSubjectService(){
+        try {
+            List<Subject> subjects = subjectRepo.findAll();
             if(subjects.isEmpty()){
-                throw new NotFoundException("Subject Is Empty");
+                throw new NotFoundException("Data Not Found");
             }
             return subjects;
         } catch (Exception e){
@@ -31,27 +41,9 @@ public class SubjectService implements ISubjectService{
         }
     }
 
-    @Override
-    public Subject create(Subject subject) {
+    public Optional<Subject> findByIdSubjectService(Long id){
         try {
-            Optional<List<Subject>> subjects = subjectRepository.findBy(SubjectKey.subject_name, subject.getSubject_name());
-            if(subjectRepository.getAll().size() <= 5){
-                if (subjects.isPresent()){
-                    throw new Exception("Data Already Exist");
-                }
-                return subjectRepository.create(subject);
-            } else {
-                throw new NotFoundException("Data is Full");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public List<Subject> get(String id) {
-        try {
-            List<Subject> subject = subjectRepository.findById(id);
+            Optional<Subject> subject = subjectRepo.findById(id);
             if(subject.isEmpty()){
                 throw new NotFoundException("Subject ID Not Found");
             }
@@ -60,62 +52,36 @@ public class SubjectService implements ISubjectService{
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public Optional<List<Subject>> getBy(SubjectKey key, String value) {
+    public Subject updateSubjectService(Subject subject, Long id){
         try {
-            Optional<List<Subject>> subjects = subjectRepository.findBy(key, value);
-            if(subjects.isEmpty()){
-                throw new NotFoundException("Subject Not Found");
-            }
-            return subjects;
+            Optional<Subject> subject1 = subjectRepo.findById(id);
+            subject1.get().setName(subject.getName());
+            return subjectRepo.save(subject1.get());
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+    public void deleteSubjectByIdService(Long id){
+        try {
+            findByIdSubjectService(id);
+            subjectRepo.deleteById(id);
         } catch (Exception e){
             throw new RuntimeException(e);
         }
     }
 
-    @Override
-    public Subject update(Subject subject, String id) {
-        try {
-            get(id);
-            Optional<List<Subject>> subjects = subjectRepository.findBy(SubjectKey.subject_name, subject.getSubject_name());
-            if(subjects.isPresent()){
-                throw new Exception("Data Already Exist");
-            }
-            subjectRepository.update(subject, id);
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
-        return subject;
+    public Iterable<Subject> findByNameContainsService(String name, Pageable pageable){
+        return subjectRepo.findByNameContains(name, pageable);
     }
 
-    @Override
-    public void delete(String id) {
-        try {
-            get(id);
-            subjectRepository.delete(id);
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
+    public List<Subject> findByIdTeacherService(Long teacher){
+        return subjectRepo.findByTeacherId(teacher);
     }
-
-    @Override
-    public List<Subject> addBulk(List<Subject> bulkSubjects) {
-        try {
-            for(Subject subject : bulkSubjects){
-                Optional<List<Subject>> subjects = subjectRepository.findBy(SubjectKey.subject_name, subject.getSubject_name());
-                if(subjectRepository.getAll().size() <= 8){
-                    if (subjects.isPresent()){
-                        throw new Exception("Data Already Exist");
-                    }
-                    subjectRepository.create(subject);
-                } else {
-                    throw new NotFoundException("Data is Full");
-                }
-            }
-            return bulkSubjects;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public List<Subject> findByStudentService(Long studentId){
+        Optional<Student> student = studentService.findByIdService(studentId);
+        if(student.isEmpty()){
+            throw new RuntimeException("ID NOT FOUND");
         }
+        return subjectRepo.findByStudent(student);
     }
 }

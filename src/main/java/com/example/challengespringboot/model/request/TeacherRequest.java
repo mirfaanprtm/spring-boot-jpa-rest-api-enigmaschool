@@ -1,6 +1,11 @@
 package com.example.challengespringboot.model.request;
 
-import jakarta.validation.constraints.*;
+import com.example.challengespringboot.model.Subject;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 public class TeacherRequest {
 

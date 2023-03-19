@@ -1,17 +1,28 @@
 package com.example.challengespringboot.model;
 
-public class Teacher {
-    private String teacherId;
+import javax.persistence.*;
+import java.io.Serializable;
+
+@Entity
+@Table(name = "teachers")
+public class Teacher implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(length = 100, nullable = false)
     private String first_name;
+    @Column(length = 100, nullable = false)
     private String last_name;
+    @Column(length = 50, nullable = false, unique = true)
     private String email;
 
-    public String getTeacherId() {
-        return teacherId;
+    public Long getId() {
+        return id;
     }
 
-    public void setTeacherId(String teacherId) {
-        this.teacherId = teacherId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirst_name() {
@@ -41,10 +52,7 @@ public class Teacher {
     @Override
     public String toString() {
         return "Teacher{" +
-                "teacherId='" + teacherId + '\'' +
-                ", first_name='" + first_name + '\'' +
-                ", last_name='" + last_name + '\'' +
-                ", email='" + email + '\'' +
+                "id=" + id +
                 '}';
     }
 }
